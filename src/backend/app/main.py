@@ -5,10 +5,20 @@ Conductor CRM - Main FastAPI Application
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 
 from app.core.config import settings
 from app.database import connect_to_mongo, close_mongo_connection
+from app.services.cache_service import cache_service
+from app.core.errors import (
+    ConductorException,
+    conductor_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    general_exception_handler
+)
 
 # Configure logging
 logging.basicConfig(
@@ -42,6 +52,7 @@ async def startup_event():
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     await connect_to_mongo()
+    await cache_service.connect()
     logger.info("Application startup complete")
 
 @app.on_event("shutdown")
@@ -49,7 +60,14 @@ async def shutdown_event():
     """Execute on application shutdown"""
     logger.info("Shutting down application...")
     await close_mongo_connection()
+    await cache_service.close()
     logger.info("Application shutdown complete")
+
+# Register exception handlers
+app.add_exception_handler(ConductorException, conductor_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
 
 @app.get("/")
 async def root():
