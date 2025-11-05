@@ -78,6 +78,6 @@ async def simple_health():
     """Simple health check"""
     return {"status": "ok"}
 
-# Include API routers (will be added in Phase 2)
-# from app.api.v1.api import api_router
-# app.include_router(api_router, prefix="/api/v1")
+# Include API routers
+from app.api.v1.api import api_router
+app.include_router(api_router, prefix="/api/v1")
