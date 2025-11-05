@@ -1,0 +1,117 @@
+services:
+  # ==========================================
+  # CORE OPENSOURCE SERVICES (Development)
+  # Using local source code with hot-reload
+  # MongoDB is shared with conductor-community (localhost:27017)
+  # Different ports to avoid conflicts when running both projects
+  # ==========================================
+
+  conductor-api:
+    build:
+      context: ./conductor/conductor
+      dockerfile: Dockerfile
+    container_name: conductor-crm-api-dev
+    restart: unless-stopped
+    env_file:
+      - ./config/conductor/.env
+    environment:
+      - NODE_ENV=development
+      - CONDUCTOR_PLUGIN_PATH=/plugins
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./conductor/conductor:/app
+      - ./config/conductor/config.yaml:/app/config.yaml:ro
+      - ./plugins:/plugins:ro
+    ports:
+      - "3001:8000"  # Different port to avoid conflict with community
+    networks:
+      - conductor-crm-network
+
+  gateway:
+    build:
+      context: ./conductor/conductor-gateway
+      dockerfile: Dockerfile
+    container_name: conductor-crm-gateway-dev
+    restart: unless-stopped
+    depends_on:
+      - conductor-api
+    env_file:
+      - ./config/gateway/.env
+    environment:
+      - NODE_ENV=development
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config/gateway/config.yaml:/app/config.yaml:ro
+      - ./conductor/conductor-gateway/src:/app/src
+    ports:
+      - "5008:8080"  # Different port to avoid conflict with community
+    networks:
+      - conductor-crm-network
+
+  web:
+    build:
+      context: ./conductor/conductor-web
+      dockerfile: Dockerfile.angular
+    container_name: conductor-crm-web-dev
+    restart: unless-stopped
+    depends_on:
+      - gateway
+    environment:
+      - GATEWAY_URL=http://gateway:8080
+    ports:
+      - "8081:80"  # Different port to avoid conflict with community
+    networks:
+      - conductor-crm-network
+
+  # ==========================================
+  # CRM PRIVATE SERVICES (Development)
+  # ==========================================
+
+  crm-backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: conductor-crm-backend-dev
+    restart: unless-stopped
+    depends_on:
+      - gateway
+    env_file:
+      - ./config/crm/.env
+    environment:
+      - NODE_ENV=development
+      - CONDUCTOR_GATEWAY_URL=http://gateway:8080
+      - MONGODB_URI=mongodb://admin:conductor123@host.docker.internal:27017/crm?authSource=admin
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./src/backend:/app
+      - /app/node_modules  # Prevent node_modules override
+    ports:
+      - "5007:5007"
+    networks:
+      - conductor-crm-network
+
+  crm-frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: conductor-crm-frontend-dev
+    restart: unless-stopped
+    depends_on:
+      - crm-backend
+    environment:
+      - API_URL=http://crm-backend:5007
+      - CONDUCTOR_WEB_URL=http://web:80
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules  # Prevent node_modules override
+    ports:
+      - "4200:80"
+    networks:
+      - conductor-crm-network
+
+networks:
+  conductor-crm-network:
+    driver: bridge

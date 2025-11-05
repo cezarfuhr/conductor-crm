@@ -1,0 +1,20 @@
+name: conductor-crm-agents
+version: 1.0.0
+description: Private CRM agents and tools for Conductor
+author: PrimoIA CRM Team
+license: Proprietary
+
+agents:
+  - LeadQualifier_Agent
+  - EmailAssistant_Agent
+  - DealPredictor_Agent
+
+tools:
+  - CRMDatabaseTool
+  - EnrichmentTool
+  - EmailSenderTool
+
+requirements:
+  - httpx>=0.25.0
+  - motor>=3.3.0
+  - pydantic>=2.5.0

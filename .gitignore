@@ -1,0 +1,152 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+!**/.env.example
+
+# Data directories
+data/
+logs/
+backups/
+*.log
+*.log.*
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.coveragerc
+
+# IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# Docker
+*.pid
+*.sock
+docker-compose.override.yml
+
+# Secrets and production configs
+config/production.yml
+config/secrets.yml
+config/**/*.production.yml
+config/**/*secrets*.yml
+config/**/.env
+!config/**/.env.example
+
+# Never commit customer data
+data/**/*
+!data/.gitkeep
+backups/**/*
+!backups/.gitkeep
+logs/**/*
+!logs/.gitkeep
+
+# Build outputs
+**/dist/
+**/build/
+**/.next/
+**/.nuxt/
+*.pyc
+*.pyo
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.swn
+*~
+.~*
+
+# Python specific
+*.py[cod]
+*$py.class
+__pycache__/
+*.so
+.Python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Node specific
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.cache
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*~
