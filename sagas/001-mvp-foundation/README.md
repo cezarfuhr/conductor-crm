@@ -12,11 +12,11 @@
 
 ```
 SAGA 001: MVP FOUNDATION
-├─ Fase 1: Setup & Fundação       (Semanas 1-2)   → 8 marcos
-├─ Fase 2: Core Features          (Semanas 3-7)   → 15 marcos
+├─ Fase 1: Setup & Fundação       (Semanas 1-2)   → 10 marcos
+├─ Fase 2: Core Features          (Semanas 3-7)   → 13 marcos
 ├─ Fase 3: Intelligence Layer     (Semanas 8-9)   → 8 marcos
-├─ Fase 4: Polish & Integration   (Semanas 10-11) → 7 marcos
-└─ Fase 5: Launch & Validation    (Semana 12)     → 5 marcos
+├─ Fase 4: Integration & Scale    (Semanas 10-11) → 6 marcos
+└─ Fase 5: Launch & Validation    (Semana 12)     → 6 marcos
 
 TOTAL: 43 Marcos
 ```
@@ -43,29 +43,46 @@ TOTAL: 43 Marcos
 - **Responsável**: CEO/CTO
 
 #### Marco 003: Infraestrutura Base
-- [ ] Setup repositórios (GitHub, branches)
+- [ ] Setup repositórios (GitHub, branches, PR templates)
 - [ ] Configurar CI/CD pipeline (GitHub Actions)
 - [ ] Setup ambientes (Dev, Staging, Prod)
-- [ ] Configurar monitoring (Sentry)
+- [ ] Configurar monitoring e alerts (Sentry)
 - **Duração**: 3 dias
 - **Responsável**: Tech Lead
 
-#### Marco 004: Inicialização Conductor Core
-- [ ] Inicializar git submodules (conductor, gateway, web)
-- [ ] Configurar submodules para versão estável
-- [ ] Testar integração entre componentes
+#### Marco 004: Docker & Containers Setup
+- [ ] Criar Dockerfiles (backend, frontend)
+- [ ] Docker Compose para dev local
+- [ ] Setup docker-compose.dev.yml
+- [ ] Testar build e run dos containers
 - **Duração**: 2 dias
 - **Responsável**: Tech Lead
 
-#### Marco 005: Database & Backend Setup
-- [ ] Setup MongoDB (local + cloud)
+#### Marco 005: Testing Framework Setup
+- [ ] Setup pytest (backend) com coverage
+- [ ] Setup Jasmine/Jest (frontend)
+- [ ] Configurar test runners no CI/CD
+- [ ] Estabelecer padrões de testes (TDD guidelines)
+- **Duração**: 2 dias
+- **Responsável**: Tech Lead
+
+#### Marco 006: Inicialização Conductor Core
+- [ ] Inicializar git submodules (conductor, gateway, web)
+- [ ] Configurar submodules para versão estável
+- [ ] Testar integração entre componentes
+- [ ] Documentar setup local
+- **Duração**: 2 dias
+- **Responsável**: Tech Lead
+
+#### Marco 007: Database & Backend Setup
+- [ ] Setup MongoDB (local Docker + cloud)
 - [ ] Definir schema inicial (leads, deals, contacts)
 - [ ] Setup FastAPI boilerplate
-- [ ] Configurar authentication (JWT)
+- [ ] Configurar authentication (JWT) com testes
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 006: Frontend Scaffold
+#### Marco 008: Frontend Scaffold
 - [ ] Setup Angular 20 project
 - [ ] Configurar Angular Material UI
 - [ ] Implementar auth guards e routing
@@ -73,15 +90,15 @@ TOTAL: 43 Marcos
 - **Duração**: 3 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 007: Integrações Externas Setup
+#### Marco 009: Integrações Externas Setup
 - [ ] Cadastrar APIs (Clearbit, OpenAI, etc)
 - [ ] Configurar API keys em .env
-- [ ] Setup rate limiting
-- [ ] Testar conectividade
+- [ ] Setup rate limiting e retry logic
+- [ ] Testar conectividade e mocks
 - **Duração**: 2 dias
 - **Responsável**: Backend Dev
 
-#### Marco 008: Design System
+#### Marco 010: Design System
 - [ ] Definir paleta de cores e tipografia
 - [ ] Criar componentes base (buttons, cards, inputs)
 - [ ] Documentar design tokens
@@ -93,47 +110,47 @@ TOTAL: 43 Marcos
 
 ### 🔷 FASE 2: Core Features (Semanas 3-7)
 
-#### Marco 009: Lead Model & API
+#### Marco 011: Lead Model & API
 - [ ] Implementar modelo Lead (backend)
 - [ ] CRUD endpoints para leads
 - [ ] Validações e error handling
-- [ ] Testes unitários
+- [ ] Testes unitários (cobertura > 80%)
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 010: Lead List UI
+#### Marco 012: Lead List UI
 - [ ] Página de listagem de leads
 - [ ] Filtros básicos (status, data)
 - [ ] Busca por nome/empresa
-- [ ] Paginação
+- [ ] Paginação e testes de componentes
 - **Duração**: 3 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 011: Lead Creation Flow
+#### Marco 013: Lead Creation Flow
 - [ ] Formulário de criação de lead
 - [ ] Validações frontend
 - [ ] Integração com backend
-- [ ] Feedback visual (success/error)
+- [ ] Testes E2E do fluxo completo
 - **Duração**: 2 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 012: LeadQualifier_Agent v1
+#### Marco 014: LeadQualifier_Agent v1
 - [ ] Implementar agente básico de qualificação
 - [ ] Integração com Conductor core
 - [ ] Cálculo de score (0-100)
-- [ ] Classificação Hot/Warm/Cold
+- [ ] Classificação Hot/Warm/Cold + testes
 - **Duração**: 5 dias
 - **Responsável**: Tech Lead + Backend Dev
 
-#### Marco 013: Auto-Enrichment Pipeline
+#### Marco 015: Auto-Enrichment Pipeline
 - [ ] Integração Clearbit API
 - [ ] Enrichment automático ao criar lead
 - [ ] Armazenar dados enriquecidos
-- [ ] Retry logic para falhas
+- [ ] Retry logic e error handling
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 014: Lead Qualification UI
+#### Marco 016: Lead Qualification UI
 - [ ] Card de qualificação (score, classification)
 - [ ] Explicação dos motivos (IA insights)
 - [ ] Next actions sugeridas
@@ -141,7 +158,7 @@ TOTAL: 43 Marcos
 - **Duração**: 3 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 015: Lead Detail Page
+#### Marco 017: Lead Detail Page
 - [ ] Página de detalhes do lead
 - [ ] Timeline de atividades
 - [ ] Informações enriquecidas
@@ -149,23 +166,23 @@ TOTAL: 43 Marcos
 - **Duração**: 4 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 016: Lead Import (CSV)
+#### Marco 018: Lead Import (CSV)
 - [ ] Upload de arquivo CSV
-- [ ] Parser e validação
+- [ ] Parser e validação com feedback
 - [ ] Bulk creation de leads
-- [ ] Relatório de importação
+- [ ] Relatório de importação com erros
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 017: Deal Model & API
+#### Marco 019: Deal Model & API
 - [ ] Implementar modelo Deal (backend)
 - [ ] CRUD endpoints para deals
 - [ ] Relacionamento Lead → Deal
-- [ ] Estágios de pipeline
+- [ ] Estágios de pipeline + testes
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 018: Pipeline Kanban View
+#### Marco 020: Pipeline Kanban View
 - [ ] Kanban board visual
 - [ ] Drag & drop entre estágios
 - [ ] Deal cards com info essencial
@@ -173,7 +190,7 @@ TOTAL: 43 Marcos
 - **Duração**: 5 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 019: Deal Detail Page
+#### Marco 021: Deal Detail Page
 - [ ] Página de detalhes do deal
 - [ ] Timeline de atividades
 - [ ] Notas e anexos
@@ -181,31 +198,35 @@ TOTAL: 43 Marcos
 - **Duração**: 4 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 020: Contact & Company Models
+#### Marco 022: Contact & Company Models
 - [ ] Modelos Contact e Company (backend)
 - [ ] CRUD endpoints
 - [ ] Relacionamentos com leads/deals
-- [ ] Deduplicação básica
+- [ ] Deduplicação básica + testes
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 021: Contact Management UI
-- [ ] Lista de contatos
+#### Marco 023: Contact Management UI
+- [ ] Lista de contatos e busca
 - [ ] Página de detalhes do contato
 - [ ] Company profile page
 - [ ] Edição de informações
 - **Duração**: 4 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 022: Activity Logging System
-- [ ] Sistema de log de atividades
+---
+
+### 🔷 FASE 3: Intelligence Layer (Semanas 8-9)
+
+#### Marco 024: Activity Logging System
+- [ ] Sistema de log de atividades (backend)
 - [ ] Tipos: call, email, meeting, note
 - [ ] Timeline component (reusável)
-- [ ] Filtros por tipo
+- [ ] Filtros por tipo + testes
 - **Duração**: 3 dias
 - **Responsável**: Backend + Frontend
 
-#### Marco 023: Gmail Integration
+#### Marco 025: Gmail Integration
 - [ ] OAuth flow do Gmail
 - [ ] Sync de emails (two-way)
 - [ ] Parser de emails
@@ -213,19 +234,15 @@ TOTAL: 43 Marcos
 - **Duração**: 5 dias
 - **Responsável**: Backend Dev
 
----
-
-### 🔷 FASE 3: Intelligence Layer (Semanas 8-9)
-
-#### Marco 024: EmailAssistant_Agent v1
+#### Marco 026: EmailAssistant_Agent v1
 - [ ] Agente de composição de emails
 - [ ] Geração de 3 variações
 - [ ] Subject line suggestions
-- [ ] Contexto de deal/contato
+- [ ] Contexto de deal/contato + testes
 - **Duração**: 5 dias
 - **Responsável**: Tech Lead
 
-#### Marco 025: Email Composer UI
+#### Marco 027: Email Composer UI
 - [ ] Interface de composição
 - [ ] Seleção de variações (tabs)
 - [ ] Editor de email
@@ -233,7 +250,7 @@ TOTAL: 43 Marcos
 - **Duração**: 4 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 026: Email Tracking
+#### Marco 028: Email Tracking
 - [ ] Tracking de opens e clicks
 - [ ] Webhooks para eventos
 - [ ] Exibir métricas na UI
@@ -241,15 +258,15 @@ TOTAL: 43 Marcos
 - **Duração**: 3 dias
 - **Responsável**: Backend + Frontend
 
-#### Marco 027: DealPredictor_Agent v1
+#### Marco 029: DealPredictor_Agent v1
 - [ ] Agente de previsão de deals
 - [ ] Win probability calculation
 - [ ] Predicted close date
-- [ ] Risk factors identification
+- [ ] Risk factors identification + testes
 - **Duração**: 5 dias
 - **Responsável**: Tech Lead
 
-#### Marco 028: Deal Intelligence UI
+#### Marco 030: Deal Intelligence UI
 - [ ] Deal health score display
 - [ ] Win probability indicator
 - [ ] Risk alerts
@@ -257,7 +274,7 @@ TOTAL: 43 Marcos
 - **Duração**: 3 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 029: Dashboard Principal
+#### Marco 031: Dashboard Principal
 - [ ] Dashboard page layout
 - [ ] Key metrics cards (pipeline value, win rate)
 - [ ] Pipeline chart (visual)
@@ -265,27 +282,27 @@ TOTAL: 43 Marcos
 - **Duração**: 4 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 030: AI Copilot Chat
+---
+
+### 🔷 FASE 4: Integration & Scale (Semanas 10-11)
+
+#### Marco 032: AI Copilot Chat
 - [ ] Chat widget (sidebar)
 - [ ] Agente de chat conversacional
 - [ ] Queries básicas (metrics, leads)
-- [ ] Quick actions
+- [ ] Quick actions + testes
 - **Duração**: 5 dias
 - **Responsável**: Tech Lead + Frontend
 
-#### Marco 031: Workflow Engine
-- [ ] Sistema de workflows
+#### Marco 033: Workflow Engine
+- [ ] Sistema de workflows (backend)
 - [ ] 3 workflows pré-configurados
 - [ ] Trigger system (events)
-- [ ] Action executor
+- [ ] Action executor + testes
 - **Duração**: 5 dias
 - **Responsável**: Backend Dev
 
----
-
-### 🔷 FASE 4: Polish & Integration (Semanas 10-11)
-
-#### Marco 032: Google Calendar Integration
+#### Marco 034: Google Calendar Integration
 - [ ] OAuth flow Calendar
 - [ ] Sync de eventos
 - [ ] Criar eventos via CRM
@@ -293,29 +310,13 @@ TOTAL: 43 Marcos
 - **Duração**: 3 dias
 - **Responsável**: Backend Dev
 
-#### Marco 033: Mobile Responsive
+#### Marco 035: Mobile Responsive
 - [ ] Adaptar todas telas para mobile
 - [ ] Touch gestures (swipe, drag)
 - [ ] Mobile navigation
-- [ ] PWA setup
+- [ ] PWA setup (service workers)
 - **Duração**: 5 dias
 - **Responsável**: Frontend Dev
-
-#### Marco 034: Performance Optimization
-- [ ] Backend: query optimization, caching
-- [ ] Frontend: lazy loading, code splitting
-- [ ] Image optimization
-- [ ] Lighthouse score > 90
-- **Duração**: 3 dias
-- **Responsável**: Tech Lead
-
-#### Marco 035: Error Handling & UX Polish
-- [ ] Error pages (404, 500)
-- [ ] Loading states
-- [ ] Empty states
-- [ ] Success/error toasts
-- **Duração**: 3 dias
-- **Responsável**: Frontend Dev + Designer
 
 #### Marco 036: Notifications System
 - [ ] Push notifications (web)
@@ -333,57 +334,57 @@ TOTAL: 43 Marcos
 - **Duração**: 3 dias
 - **Responsável**: Frontend Dev
 
-#### Marco 038: Testing & QA
-- [ ] Testes E2E principais fluxos
-- [ ] Bug fixing
-- [ ] Cross-browser testing
-- [ ] Performance testing
-- **Duração**: 5 dias
-- **Responsável**: Todo o time
-
 ---
 
 ### 🔷 FASE 5: Launch & Validation (Semana 12)
 
-#### Marco 039: Documentation
+#### Marco 038: Performance Optimization
+- [ ] Backend: query optimization, caching (Redis)
+- [ ] Frontend: lazy loading, code splitting
+- [ ] Image optimization e CDN
+- [ ] Lighthouse score > 90
+- **Duração**: 3 dias
+- **Responsável**: Tech Lead
+
+#### Marco 039: Error Handling & UX Polish
+- [ ] Error pages (404, 500)
+- [ ] Loading states consistentes
+- [ ] Empty states com CTAs
+- [ ] Success/error toasts e feedback
+- **Duração**: 3 dias
+- **Responsável**: Frontend Dev + Designer
+
+#### Marco 040: Testing & QA Final
+- [ ] Testes E2E completos (principais fluxos)
+- [ ] Bug bash com todo time
+- [ ] Cross-browser testing
+- [ ] Load testing e performance
+- **Duração**: 4 dias
+- **Responsável**: Todo o time
+
+#### Marco 041: Documentation & Onboarding
 - [ ] User documentation (help center)
 - [ ] API documentation
-- [ ] Onboarding guides
-- [ ] Video tutorials
+- [ ] Onboarding guides e tutorials
+- [ ] Video walkthrough
 - **Duração**: 3 dias
 - **Responsável**: Product + Designer
 
-#### Marco 040: Beta Onboarding Flow
-- [ ] Signup flow otimizado
-- [ ] Welcome wizard
-- [ ] Sample data (demo)
-- [ ] Onboarding checklist
-- **Duração**: 2 dias
-- **Responsável**: Frontend Dev
-
-#### Marco 041: Analytics & Monitoring
+#### Marco 042: Analytics & Monitoring
 - [ ] Setup Mixpanel/Amplitude
-- [ ] Event tracking
-- [ ] Error monitoring (Sentry)
-- [ ] Performance monitoring
+- [ ] Event tracking (funnel, retention)
+- [ ] Error monitoring (Sentry config final)
+- [ ] Performance monitoring (APM)
 - **Duração**: 2 dias
 - **Responsável**: Backend Dev
 
-#### Marco 042: Soft Launch (10 empresas)
-- [ ] Onboard 10 beta testers
-- [ ] Coletar feedback inicial
-- [ ] Hotfixes críticos
-- [ ] Iteração rápida
+#### Marco 043: Beta Launch
+- [ ] Soft launch (10 empresas) - 3 dias
+- [ ] Hotfixes críticos - 2 dias
+- [ ] Beta launch público (50 empresas) - 2 dias
+- [ ] Success metrics tracking e feedback
 - **Duração**: 1 semana
-- **Responsável**: Todo o time
-
-#### Marco 043: Beta Launch (50 empresas)
-- [ ] Marketing materials
-- [ ] Launch em canais (Product Hunt, LinkedIn)
-- [ ] Onboard 50 empresas
-- [ ] Success metrics tracking
-- **Duração**: Ongoing
-- **Responsável**: CEO + todo o time
+- **Responsável**: Todo o time + CEO
 
 ---
 
@@ -391,6 +392,7 @@ TOTAL: 43 Marcos
 
 ### KPIs Técnicos
 - [ ] MVP 100% funcional (todas features core)
+- [ ] Test coverage > 70% (backend + frontend)
 - [ ] Page load time < 2s
 - [ ] API response time < 500ms
 - [ ] Uptime > 99%
@@ -425,34 +427,38 @@ TOTAL: 43 Marcos
 - **APIs**: Clearbit, OpenAI/Anthropic disponíveis
 - **Design**: Protótipos high-fi disponíveis semana 2
 - **Feedback**: Acesso a design partners desde semana 6
+- **Testing**: Testes unitários contínuos, E2E a partir semana 8
 
 ---
 
 ## 🚨 Riscos e Mitigações
 
 ### Risco 1: IA não entrega qualidade esperada
-**Mitigação**: Testar agentes desde semana 3, iterar rápido
+**Mitigação**: Testar agentes desde semana 3, iterar rápido, ter fallback manual
 
 ### Risco 2: Atraso no desenvolvimento
 **Mitigação**: Priorizar features core (Leads + Email + Deals), cortar secundárias
 
-### Risco 3: Time incompleto
-**Mitigação**: Tech Lead assume múltiplos papéis temporariamente
+### Risco 3: Time incompleto ou turnover
+**Mitigação**: Tech Lead assume múltiplos papéis, documentação contínua
 
 ### Risco 4: Beta users não engajam
 **Mitigação**: Onboarding ativo (calls 1-on-1), coletar feedback semanal
+
+### Risco 5: Integração Conductor complexa
+**Mitigação**: Prototipar integração na semana 1, ter suporte do core team
 
 ---
 
 ## 📈 Milestones Principais
 
 ```
-Semana 2:  ✅ Setup Completo
-Semana 4:  ✅ Lead Management Funcional
-Semana 6:  ✅ Deal Pipeline Funcional
-Semana 8:  ✅ Email AI Funcional (CORE)
-Semana 10: ✅ Dashboard + IA Predictive
-Semana 11: ✅ Polish + Mobile
+Semana 2:  ✅ Setup Completo (Docker + CI/CD + Testes)
+Semana 4:  ✅ Lead Management Funcional (+ testes)
+Semana 6:  ✅ Deal Pipeline Funcional (+ testes)
+Semana 8:  ✅ Email AI Funcional (CORE DIFERENCIAL)
+Semana 9:  ✅ Dashboard + IA Predictive
+Semana 11: ✅ Integration + Mobile + Workflows
 Semana 12: ✅ Beta Launch (50 empresas)
 ```
 
@@ -464,6 +470,26 @@ Semana 12: ✅ Beta Launch (50 empresas)
 - Período: Meses 4-6
 - Objetivo: 200 empresas, R$ 600k ARR
 - Features: Call tracking, MeetingAssistant, WhatsApp, Analytics avançado
+
+---
+
+## 📝 Notas Importantes
+
+### Sobre Testes
+- **Testes unitários**: Contínuos desde semana 1 (cada feature)
+- **Testes integração**: Durante desenvolvimento (backend ↔ frontend)
+- **Testes E2E**: A partir semana 8 (fluxos críticos)
+- **QA Final**: Semana 12 (bug bash completo)
+
+### Sobre Docker/Containers
+- **Setup**: Semana 1 (Marco 004)
+- **Uso**: Durante todo desenvolvimento (dev local + CI/CD)
+- **Otimização**: Semana 10 (se necessário)
+
+### Sobre Performance
+- **Pensar**: Desde o início (design de queries, caching strategy)
+- **Monitorar**: Durante todo desenvolvimento (performance budget)
+- **Otimizar**: Semana 10 (refinamento final)
 
 ---
 
@@ -485,5 +511,5 @@ Semana 12: ✅ Beta Launch (50 empresas)
 **Início Previsto**: [Data]
 **Fim Previsto**: [Data + 12 semanas]
 **Budget**: R$ 231.000
-**Versão**: 1.0
+**Versão**: 2.0 (revisado)
 **Última Atualização**: 2025-11-05
