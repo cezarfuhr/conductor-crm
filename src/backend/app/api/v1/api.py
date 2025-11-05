@@ -3,7 +3,7 @@ API v1 router aggregation
 """
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import leads, deals, ai, auth, notifications, settings
+from app.api.v1.endpoints import leads, deals, ai, auth, notifications, settings, google_calendar
 
 api_router = APIRouter()
 
@@ -20,3 +20,6 @@ api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
 # User features
 api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
+
+# Integrations
+api_router.include_router(google_calendar.router, prefix="/google-calendar", tags=["google-calendar"])
