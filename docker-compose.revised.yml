@@ -1,0 +1,256 @@
+# ============================================================================
+# CONDUCTOR CRM - Integrated AI-First Architecture
+# ============================================================================
+# 
+# This compose file orchestrates the COMPLETE solution:
+# - Conductor API (submodule - AI orchestration engine)
+# - Conductor Gateway (submodule - BFF with SSE streaming)
+# - CRM Backend (FastAPI - business logic)
+# - Redis (caching & jobs)
+#
+# MongoDB is EXTERNAL (as requested)
+#
+# All components are PART of the solution, not external services.
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # CONDUCTOR API ENGINE (from submodule conductor/conductor)
+  # ==========================================================================
+  conductor-api:
+    build:
+      context: ./conductor/conductor
+      dockerfile: Dockerfile
+    container_name: conductor-crm-api
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB connection (external)
+      - MONGODB_CONNECTION_STRING=${MONGODB_URI:-mongodb://host.docker.internal:27017/conductor}
+      
+      # AI Provider configuration
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+    volumes:
+      # Mount agent definitions from CRM project
+      - ./conductor-agents:/app/agents:ro
+      
+      # Workspace for conversation history (persisted)
+      - conductor-workspace:/app/.conductor_workspace
+      
+      # Hot reload for development (optional)
+      # - ./conductor/conductor/src:/app/src
+      
+    networks:
+      - conductor-crm-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # CONDUCTOR GATEWAY (from submodule conductor/conductor-gateway)
+  # ==========================================================================
+  conductor-gateway:
+    build:
+      context: ./conductor/conductor-gateway
+      dockerfile: Dockerfile
+    container_name: conductor-crm-gateway
+    ports:
+      - "5006:5006"  # HTTP API
+      - "8006:8006"  # MCP Server
+    environment:
+      # Server configuration
+      - HOST=0.0.0.0
+      - PORT=5006
+      - MCP_PORT=8006
+      
+      # Conductor API connection (internal network)
+      - CONDUCTOR_API_URL=http://conductor-api:8000
+      - CONDUCTOR_TIMEOUT=600
+      
+      # MongoDB connection (external - for gateway's own data)
+      - MONGODB_URI=${MONGODB_URI:-mongodb://host.docker.internal:27017/conductor_gateway}
+      - DATABASE_NAME=conductor_gateway
+      
+      # CORS for CRM frontend
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4200,http://localhost:8001}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+    volumes:
+      # Optional: Mount config file
+      # - ./conductor-gateway-config.yaml:/app/config.yaml:ro
+      
+      # Hot reload for development (optional)
+      # - ./conductor/conductor-gateway/src:/app/src
+      
+    depends_on:
+      conductor-api:
+        condition: service_healthy
+    networks:
+      - conductor-crm-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # CRM BACKEND (FastAPI - main business logic)
+  # ==========================================================================
+  crm-backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: conductor-crm-backend
+    ports:
+      - "8001:8000"  # Different port to avoid conflict with conductor-api
+    environment:
+      # Application
+      - APP_NAME=Conductor CRM
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG=${DEBUG:-true}
+      
+      # Security
+      - SECRET_KEY=${SECRET_KEY:-change-this-to-a-secure-random-string-min-32-chars}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      
+      # MongoDB connection (external - for CRM data)
+      - MONGO_URL=${MONGO_URL:-mongodb://host.docker.internal:27017/conductor_crm}
+      
+      # Redis (internal network)
+      - REDIS_URL=redis://redis:6379/0
+      
+      # Conductor Gateway integration (internal network)
+      - CONDUCTOR_GATEWAY_URL=http://conductor-gateway:5006
+      - CONDUCTOR_API_URL=http://conductor-api:8000
+      
+      # AI/ML APIs (Gateway handles this, but keep for direct usage if needed)
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      
+      # External Integrations
+      - CLEARBIT_API_KEY=${CLEARBIT_API_KEY:-}
+      - HUNTER_API_KEY=${HUNTER_API_KEY:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
+      
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4200,http://localhost:3000}
+      
+      # Frontend URL
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4200}
+      
+    volumes:
+      # Hot reload for development
+      - ./src/backend:/app
+      
+    depends_on:
+      - redis
+      - conductor-gateway
+    networks:
+      - conductor-crm-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ==========================================================================
+  # REDIS (Caching & Background Jobs)
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: conductor-crm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - conductor-crm-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    command: redis-server --appendonly yes
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  conductor-crm-net:
+    driver: bridge
+    name: conductor-crm-network
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  # Redis persistent storage
+  redis-data:
+    name: conductor-crm-redis-data
+    
+  # Conductor workspace (agent conversation history)
+  conductor-workspace:
+    name: conductor-crm-workspace
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Prerequisites:
+#   1. MongoDB running externally (e.g., localhost:27017 or Atlas)
+#   2. .env file with required variables (see .env.example)
+#   3. Agent definitions in conductor-agents/ directory
+#
+# Start all services:
+#   docker-compose -f docker-compose.revised.yml up -d
+#
+# View logs:
+#   docker-compose -f docker-compose.revised.yml logs -f
+#
+# Stop all services:
+#   docker-compose -f docker-compose.revised.yml down
+#
+# Rebuild after code changes:
+#   docker-compose -f docker-compose.revised.yml up -d --build
+#
+# Service URLs:
+#   - Conductor API:     http://localhost:8000
+#   - Conductor Gateway: http://localhost:5006
+#   - MCP Server:        http://localhost:8006
+#   - CRM Backend:       http://localhost:8001
+#   - Redis:             redis://localhost:6379
+#
+# Health Checks:
+#   curl http://localhost:8000/health  # Conductor API
+#   curl http://localhost:5006/health  # Gateway
+#   curl http://localhost:8001/health  # CRM Backend
+#
+# Architecture Flow:
+#   Frontend → CRM Backend (8001) → Gateway (5006) → Conductor API (8000) → LLMs
+#                    ↓                   ↓                    ↓
+#                MongoDB             MongoDB           Agent Definitions
+#               (CRM data)        (Gateway data)       (conductor-agents/)
+#
+# ============================================================================
