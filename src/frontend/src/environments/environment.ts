@@ -1,10 +1,12 @@
 export const environment = {
   production: false,
   name: 'development',
-  apiUrl: 'http://localhost:8000',
-  wsUrl: 'ws://localhost:8000',
+  apiUrl: 'http://localhost:8001',
+  wsUrl: 'ws://localhost:8001',
+  conductorGatewayUrl: 'http://localhost:5006',
   firebase: {
     measurementId: ''
   },
-  sentryDsn: ''
+  sentryDsn: '',
+  version: '1.0.0'
 };

@@ -1,93 +1,191 @@
+# Conductor CRM - AI-First Architecture
+# Docker Compose configuration for local development
+#
+# Architecture:
+#   CRM Frontend (Angular) → CRM Backend (FastAPI) → Conductor Gateway → Conductor API → AI Agents
+#
+# Note: MongoDB is EXTERNAL (not in this compose file)
+# Ensure MongoDB is running and accessible at the configured URI
+
+version: '3.8'
+
 services:
-  # ==========================================
-  # CORE OPENSOURCE SERVICES
-  # MongoDB is shared with conductor-community (localhost:27017)
-  # Different ports to avoid conflicts when running both projects
-  # ==========================================
-
+  # ===========================================================================
+  # CONDUCTOR API ENGINE (Core AI Orchestration)
+  # ===========================================================================
   conductor-api:
-    image: primoia/conductor:latest
-    container_name: conductor-crm-api
-    restart: unless-stopped
-    env_file:
-      - ./config/conductor/.env
+    build:
+      context: ./conductor/conductor
+      dockerfile: Dockerfile
+    container_name: conductor-api
+    ports:
+      - "8000:8000"
     environment:
-      - CONDUCTOR_PLUGIN_PATH=/plugins
+      # Storage configuration
+      - STORAGE_TYPE=mongodb
+      - MONGODB_URI=${MONGODB_URI:-mongodb://host.docker.internal:27017/conductor}
+
+      # AI Provider configuration
+      - AI_PROVIDER_DEFAULT=claude
+      - AI_PROVIDER_FALLBACK=cursor-agent
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+      # Conductor configuration
+      - LOG_LEVEL=INFO
+      - PROMPT_FORMAT=xml
+
     volumes:
-      - ./config/conductor/config.yaml:/app/config.yaml:ro
-      - ./plugins:/plugins:ro
-    ports:
-      - "3001:8000"  # Different port to avoid conflict with community
+      # Mount agent definitions (YAML + MD files)
+      - ./conductor-agents:/app/agents:ro
+      # Mount workspace for conversation history
+      - conductor-workspace:/app/.conductor_workspace
     networks:
-      - conductor-crm-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  # Access host MongoDB
-
-  gateway:
-    image: primoia/conductor-gateway:latest
-    container_name: conductor-crm-gateway
+      - conductor-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
-    depends_on:
-      - conductor-api
-    env_file:
-      - ./config/gateway/.env
-    volumes:
-      - ./config/gateway/config.yaml:/app/config.yaml:ro
-    ports:
-      - "5008:8080"  # Different port to avoid conflict with community
-    networks:
-      - conductor-crm-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  # Access host MongoDB
 
-  web:
-    image: primoia/conductor-web:latest
-    container_name: conductor-crm-web
+  # ===========================================================================
+  # CONDUCTOR GATEWAY (Backend-for-Frontend)
+  # ===========================================================================
+  conductor-gateway:
+    build:
+      context: ./conductor/conductor-gateway
+      dockerfile: Dockerfile
+    container_name: conductor-gateway
+    ports:
+      - "5006:5006"  # HTTP API
+      - "8006:8006"  # MCP Server
+    environment:
+      # Server configuration
+      - HOST=0.0.0.0
+      - PORT=5006
+      - MCP_PORT=8006
+
+      # Conductor API connection
+      - CONDUCTOR_PROJECT_PATH=/conductor
+      - CONDUCTOR_API_URL=http://conductor-api:8000
+      - CONDUCTOR_TIMEOUT=600
+
+      # Database (MongoDB external)
+      - MONGODB_URI=${MONGODB_URI:-mongodb://host.docker.internal:27017/conductor_gateway}
+      - DATABASE_NAME=conductor_gateway
+
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:4200,http://localhost:8001}
+
+      # Logging
+      - LOG_LEVEL=INFO
+
+    depends_on:
+      conductor-api:
+        condition: service_healthy
+    networks:
+      - conductor-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
-    depends_on:
-      - gateway
-    ports:
-      - "8081:80"  # Different port to avoid conflict with community
-    networks:
-      - conductor-crm-network
 
-  # ==========================================
-  # CRM PRIVATE SERVICES
-  # ==========================================
-
+  # ===========================================================================
+  # CRM BACKEND (FastAPI + Business Logic)
+  # ===========================================================================
   crm-backend:
-    build: ./src/backend
-    container_name: conductor-crm-backend
-    restart: unless-stopped
-    depends_on:
-      - gateway
-    env_file:
-      - ./config/crm/.env
-    environment:
-      - NODE_ENV=production
-      - CONDUCTOR_GATEWAY_URL=http://gateway:8080
-      - MONGODB_URI=mongodb://admin:conductor123@host.docker.internal:27017/crm?authSource=admin
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: crm-backend
     ports:
-      - "5007:5007"
-    networks:
-      - conductor-crm-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  # Access host MongoDB
+      - "8001:8000"  # Different port to avoid conflict with conductor-api
+    environment:
+      # Application
+      - APP_NAME=Conductor CRM
+      - ENVIRONMENT=development
+      - DEBUG=true
 
-  crm-frontend:
-    build: ./src/frontend
-    container_name: conductor-crm-frontend
-    restart: unless-stopped
+      # Security
+      - SECRET_KEY=${SECRET_KEY:-change-this-to-a-secure-random-string-min-32-chars}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+      # Database (MongoDB external)
+      - MONGO_URL=${MONGO_URL:-mongodb://host.docker.internal:27017/conductor_crm}
+
+      # Redis
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+
+      # Conductor Gateway integration
+      - CONDUCTOR_GATEWAY_URL=http://conductor-gateway:5006
+      - CONDUCTOR_API_URL=http://conductor-api:8000
+
+      # AI/ML APIs (optional, Gateway handles this)
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+      # External Integrations
+      - CLEARBIT_API_KEY=${CLEARBIT_API_KEY:-}
+      - HUNTER_API_KEY=${HUNTER_API_KEY:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
+
+      # CORS
+      - CORS_ORIGINS=http://localhost:4200,http://localhost:3000
+
+      # Frontend URL
+      - FRONTEND_URL=http://localhost:4200
+
     depends_on:
-      - crm-backend
-    environment:
-      - API_URL=http://crm-backend:5007
-      - CONDUCTOR_WEB_URL=http://web:80
-    ports:
-      - "4200:80"
+      - redis
+      - conductor-gateway
     networks:
-      - conductor-crm-network
+      - conductor-network
+    volumes:
+      - ./src/backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ===========================================================================
+  # REDIS (Caching & Background Jobs)
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: crm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - conductor-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    command: redis-server --appendonly yes
 
 networks:
-  conductor-crm-network:
+  conductor-network:
     driver: bridge
+    name: conductor-crm-network
+
+volumes:
+  redis-data:
+    name: crm-redis-data
+  conductor-workspace:
+    name: conductor-workspace
